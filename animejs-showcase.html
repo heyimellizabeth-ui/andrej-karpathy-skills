@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Motion Lab — an Anime.js v4 field guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16170f; --ink-2:#4f5247; --ink-3:#7b7e72;
+  --paper:#f1efe7; --paper-2:#e7e4d9; --card:#faf9f4;
+  --line:rgba(22,23,15,.13); --line-2:rgba(22,23,15,.07);
+  --accent:#b6e000; --accent-2:#a2c800; --accent-ink:#1a1d00;
+  --code-bg:#16170f; --code-fg:#e9e7dc; --code-mut:#94948a;
+  --code-s:#e9c46a; --code-n:#a8c98f; --code-k:#c6f23c;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r:14px; --r-sm:9px;
+  --maxw:1120px;
+  --display: 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--display); font-size:16px; line-height:1.6;
+  font-weight:400; letter-spacing:-.005em;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+@media(min-width:768px){ body{ font-size:17px; } }
+a{ color:inherit; }
+.eyebrow{ font-family:var(--mono); font-weight:500; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-2); }
+.wrap{ max-width:var(--maxw); margin:0 auto; padding-inline:var(--s5); }
+@media(min-width:768px){ .wrap{ padding-inline:var(--s7); } }
+
+/* focus */
+:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; border-radius:4px; }
+
+/* ---------- header ---------- */
+header{
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.bar{ max-width:var(--maxw); margin:0 auto; padding:var(--s3) var(--s5); display:flex; align-items:center; justify-content:space-between; gap:var(--s4); }
+@media(min-width:768px){ .bar{ padding:var(--s3) var(--s7); } }
+.brand{ display:flex; align-items:center; gap:var(--s3); font-weight:600; letter-spacing:-.02em; text-decoration:none; }
+.brand .mk{ width:13px; height:13px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%, transparent); flex:0 0 auto; }
+.brand small{ font-family:var(--mono); font-size:.62rem; letter-spacing:.16em; color:var(--ink-3); text-transform:uppercase; margin-left:2px; }
+.nav{ display:flex; align-items:center; gap:var(--s5); }
+.nav .lnk{ display:none; font-family:var(--mono); font-size:.78rem; letter-spacing:.04em; text-decoration:none; color:var(--ink-2); }
+.nav .lnk:hover{ color:var(--ink); }
+@media(min-width:768px){ .nav .lnk{ display:inline; } }
+.cta{
+  font-family:var(--mono); font-weight:500; font-size:.8rem; letter-spacing:.02em;
+  background:var(--accent); color:var(--accent-ink); text-decoration:none;
+  min-height:44px; display:inline-flex; align-items:center; gap:var(--s2);
+  padding:0 var(--s4); border-radius:999px; border:1px solid var(--accent-2);
+  transition:transform .12s ease, background .12s ease;
+}
+.cta:hover{ background:var(--accent-2); }
+.cta:active{ transform:scale(.97); }
+
+/* ---------- hero ---------- */
+.hero{ position:relative; overflow:clip; padding:var(--s9) 0 var(--s8); isolation:isolate; }
+.hero .wrap{ position:relative; z-index:2; }
+#heroGrid{
+  position:absolute; inset:0; z-index:1; display:grid; place-items:center;
+  pointer-events:none; -webkit-mask-image:radial-gradient(120% 90% at 50% 38%, #000 38%, transparent 78%);
+          mask-image:radial-gradient(120% 90% at 50% 38%, #000 38%, transparent 78%);
+}
+#heroGrid .field{
+  display:grid; grid-template-columns:repeat(11,1fr); gap:clamp(10px,2.6vw,22px);
+  width:min(92vw,560px); aspect-ratio:1;
+}
+#heroGrid i{ display:block; width:100%; aspect-ratio:1; border-radius:3px; background:var(--accent); opacity:.22; }
+.hero h1{
+  font-size:clamp(2.6rem,9vw,5.5rem); line-height:.98; font-weight:700;
+  letter-spacing:-.035em; margin:var(--s4) 0 var(--s5); max-width:14ch;
+}
+.hero h1 em{ font-style:normal; color:var(--accent-2); }
+.lead{ font-size:clamp(1.05rem,2.6vw,1.3rem); color:var(--ink-2); max-width:46ch; line-height:1.55; margin:0 0 var(--s7); }
+.hero-row{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--s4); }
+.chip{
+  font-family:var(--mono); font-size:.82rem; display:inline-flex; align-items:center; gap:var(--s3);
+  background:var(--card); border:1px solid var(--line); border-radius:999px;
+  min-height:44px; padding:0 var(--s3) 0 var(--s4); cursor:pointer; color:var(--ink);
+  transition:transform .1s ease, border-color .12s ease;
+}
+.chip:hover{ border-color:var(--ink-3); }
+.chip:active{ transform:scale(.98); }
+
+/* ---------- section intro ---------- */
+.intro{ padding:var(--s8) 0 var(--s5); border-top:1px solid var(--line); }
+.intro h2{ font-size:clamp(1.7rem,5vw,2.5rem); line-height:1.05; letter-spacing:-.03em; margin:var(--s3) 0; max-width:20ch; font-weight:600; }
+.intro p{ color:var(--ink-2); max-width:54ch; margin:0; }
+
+/* ---------- station ---------- */
+.station{ padding:var(--s8) 0; border-top:1px solid var(--line); }
+.st-head{ display:flex; align-items:baseline; gap:var(--s4); flex-wrap:wrap; margin-bottom:var(--s6); }
+.st-num{ font-family:var(--mono); font-weight:700; font-size:.95rem; color:var(--accent-2); letter-spacing:.04em; }
+.st-titles h3{ font-size:clamp(1.35rem,3.6vw,1.9rem); letter-spacing:-.025em; margin:0; font-weight:600; }
+.st-titles p{ margin:var(--s2) 0 0; color:var(--ink-2); max-width:48ch; font-size:.98rem; }
+.st-grid{ display:grid; grid-template-columns:1fr; gap:var(--s5); }
+@media(min-width:1024px){ .st-grid{ grid-template-columns:1.04fr .96fr; gap:var(--s6); align-items:stretch; } }
+
+/* demo stage */
+.stage{
+  position:relative; background:var(--card); border:1px solid var(--line);
+  border-radius:var(--r); min-height:300px; overflow:hidden;
+  display:grid; place-items:center; padding:var(--s5);
+  background-image:radial-gradient(var(--line-2) 1px, transparent 1px); background-size:22px 22px;
+  transition:box-shadow .2s ease;
+}
+.stage:hover{ box-shadow:0 8px 36px rgba(22,23,15,.09); }
+.stage svg{ display:block; width:100%; height:auto; }
+.stage-foot{ display:flex; align-items:center; justify-content:space-between; gap:var(--s4); margin-top:var(--s4); flex-wrap:wrap; }
+.hint{ font-family:var(--mono); font-size:.72rem; letter-spacing:.04em; color:var(--ink-3); display:inline-flex; align-items:center; gap:var(--s2); }
+.btn{
+  font-family:var(--mono); font-size:.78rem; letter-spacing:.03em; font-weight:500;
+  background:transparent; color:var(--ink); border:1px solid var(--line);
+  min-height:44px; padding:0 var(--s4); border-radius:var(--r-sm); cursor:pointer;
+  display:inline-flex; align-items:center; gap:var(--s2);
+  transition:transform .1s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.btn:hover{ background:var(--paper-2); border-color:var(--ink-3); box-shadow:0 2px 8px rgba(22,23,15,.06); }
+.btn:active{ transform:scale(.98); }
+.btn[disabled]{ opacity:.45; cursor:not-allowed; }
+.btn svg{ width:15px; height:15px; }
+
+/* dot grids */
+.dotfield{ display:grid; grid-template-columns:repeat(13,1fr); gap:clamp(5px,1.4vw,9px); width:min(78%,300px); }
+.dotfield .dot{ width:100%; aspect-ratio:1; border-radius:3px; background:var(--ink); opacity:.85; }
+.st01 .dotfield .dot{ background:var(--accent-2); }
+
+/* code panel */
+.code-panel{ background:var(--code-bg); border:1px solid #2a2b1f; border-radius:var(--r); overflow:hidden; display:flex; flex-direction:column; }
+.code-bar{ display:flex; align-items:center; gap:var(--s2); padding:var(--s3) var(--s4); border-bottom:1px solid #2a2b1f; }
+.code-bar i{ width:10px; height:10px; border-radius:50%; background:#3a3b2c; }
+.code-bar i:nth-child(1){ background:#ff5f57; } .code-bar i:nth-child(2){ background:#febc2e; } .code-bar i:nth-child(3){ background:#28c840; }
+.code-bar span{ font-family:var(--mono); font-size:.68rem; letter-spacing:.08em; color:#7d7e6f; margin-left:auto; text-transform:uppercase; }
+pre.code{ margin:0; padding:var(--s5) var(--s4); overflow-x:auto; flex:1; }
+pre.code code{ font-family:var(--mono); font-size:.8rem; line-height:1.65; color:var(--code-fg); white-space:pre; }
+@media(min-width:768px){ pre.code code{ font-size:.84rem; } }
+.code .k{ color:var(--code-k); } .code .s{ color:var(--code-s); } .code .n{ color:var(--code-n); } .code .c{ color:var(--code-mut); font-style:italic; }
+
+/* specific stages */
+.svg-ink{ stroke:var(--ink); }
+.svg-line{ fill:none; stroke:var(--ink); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+.svg-accent{ fill:none; stroke:var(--accent-2); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+.track{ fill:none; stroke:var(--line); stroke-width:2; stroke-dasharray:2 6; }
+.rider{ fill:var(--accent); }
+.morph{ fill:var(--ink); }
+.chipfield{ position:relative; width:100%; height:200px; display:grid; place-items:center; }
+.chipfield .chip-s{ position:absolute; width:30px; height:30px; border-radius:6px; background:var(--ink); will-change:transform; }
+.chipfield .chip-s:nth-child(3n){ background:var(--accent); border-radius:50%; }
+.chipfield .chip-s:nth-child(3n+1){ background:var(--ink-2); }
+.pad{ position:relative; width:100%; height:240px; border:1px dashed var(--line); border-radius:var(--r-sm); overflow:hidden; }
+.puck{
+  position:absolute; left:50%; top:50%; width:64px; height:64px; margin:-32px 0 0 -32px;
+  border-radius:50%; background:var(--accent); border:2px solid var(--accent-2);
+  display:grid; place-items:center; cursor:grab; touch-action:none; will-change:transform;
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.1em; color:var(--accent-ink); text-transform:uppercase;
+}
+.puck:active{ cursor:grabbing; }
+.clock{ width:min(70%,240px); }
+.clock .tick{ stroke:var(--ink); stroke-width:3; stroke-linecap:round; opacity:.85; }
+.clock .ticker{ stroke:var(--accent-2); stroke-width:4; stroke-linecap:round; transform-box:fill-box; transform-origin:center; }
+.clock .hub{ fill:var(--ink); }
+.orbwrap{ display:flex; gap:var(--s5); }
+.orb{ width:26px; height:26px; border-radius:50%; background:var(--accent); will-change:transform; }
+.orb:nth-child(2){ background:var(--ink); } .orb:nth-child(3){ background:var(--accent-2); }
+
+/* charfield (station 09) */
+.charfield{ display:flex; flex-wrap:wrap; justify-content:center; gap:0; }
+.charfield .char-word{ display:inline-flex; overflow:hidden; line-height:1.1; margin:0 .06em; }
+.charfield .char{ display:inline-block; font-size:clamp(2rem,6vw,3.6rem); font-weight:700; letter-spacing:-.035em; will-change:transform; }
+.charfield .char-sp{ width:.28em; display:inline-block; }
+
+/* ---------- footer ---------- */
+footer{ border-top:1px solid var(--line); padding:var(--s8) 0 var(--s9); }
+.foot-row{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:var(--s4); align-items:center; }
+.foot-links{ display:flex; gap:var(--s5); font-family:var(--mono); font-size:.78rem; }
+.foot-links a{ text-decoration:none; color:var(--ink-2); } .foot-links a:hover{ color:var(--ink); }
+.foot-note{ font-family:var(--mono); font-size:.7rem; color:var(--ink-3); letter-spacing:.03em; }
+
+/* reduced-motion designed state */
+.rm-note{ display:none; font-family:var(--mono); font-size:.7rem; color:var(--ink-3); }
+[data-reduce="1"] .rm-note{ display:inline-flex; }
+[data-reduce="1"] #heroGrid i{ opacity:.18; }
+@media (prefers-reduced-motion: reduce){
+  *{ scroll-behavior:auto !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a class="brand" href="#top"><span class="mk" aria-hidden="true"></span>Motion&nbsp;Lab<small>anime.js v4</small></a>
+    <nav class="nav" aria-label="Primary">
+      <a class="lnk" href="#instruments">Instruments</a>
+      <a class="lnk" href="#bundle">Bundle</a>
+      <a class="cta" href="https://animejs.com" target="_blank" rel="noopener">Get Anime.js
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div id="heroGrid" aria-hidden="true"><div class="field"></div></div>
+    <div class="wrap">
+      <p class="eyebrow">JavaScript animation engine · v4</p>
+      <h1>Make the web <em>move.</em></h1>
+      <p class="lead">A field guide to Anime.js v4 — nine live instruments, each one running the real API in front of you. Move your pointer across the grid.</p>
+      <div class="hero-row">
+        <span class="chip"><span style="color:var(--accent-2)">$</span>&nbsp;npm i animejs</span>
+        <span class="rm-note">reduced-motion on — animations paused, static states shown</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTRO -->
+  <section class="intro wrap" id="instruments">
+    <p class="eyebrow">The toolbox</p>
+    <h2>One small API. Nine ways to move.</h2>
+    <p>Anime.js v4 is modular and ESM-first — import only the parts you touch. Each instrument below isolates one capability, with the exact code that drives it sitting right beside the demo.</p>
+  </section>
+
+  <!-- 01 GRID STAGGER -->
+  <section class="station st01">
+    <div class="wrap">
+      <div class="st-head">
+        <span class="st-num">01</span>
+        <div class="st-titles"><h3>Grid stagger</h3><p>Drive a 13×13 field from a single timeline, rippling outward from the centre with one stagger call.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage st01"><div class="dotfield" id="grid01" aria-hidden="true"></div></div>
+          <div class="stage-foot"><span class="hint">timeline · stagger(grid, from:'center')</span>
+            <button class="btn" data-play="01" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>replay</button></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>01 · stagger</span></div>
+<pre class="code"><code>import { createTimeline, stagger } from 'animejs';
+
+createTimeline()
+  .add('.dot', {
+    scale: [1, 1.6, 1],
+    ease: 'inOutQuad',
+    duration: 700,
+  }, stagger(45, { grid: [13, 13], from: 'center' }));</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 DRAW ON SCROLL -->
+  <section class="station">
+    <div class="wrap">
+      <div class="st-head"><span class="st-num">02</span>
+        <div class="st-titles"><h3>Draw on scroll</h3><p>Bind a stroke's progress directly to the scrollbar. The line draws as this block crosses the viewport.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage">
+            <svg id="draw02" viewBox="0 0 320 160" role="img" aria-label="A curve drawing in as you scroll">
+              <path class="svg-line" style="opacity:.15" d="M12 130 C 70 130 70 30 130 30 S 200 130 250 90 S 300 40 308 40"/>
+              <path class="ln svg-accent" d="M12 130 C 70 130 70 30 130 30 S 200 130 250 90 S 300 40 308 40"/>
+            </svg>
+          </div>
+          <div class="stage-foot"><span class="hint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>scroll down to draw the path</span><span class="rm-note">static · fully drawn</span></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>02 · svg + scroll</span></div>
+<pre class="code"><code>import { animate, svg, onScroll } from 'animejs';
+
+animate(svg.createDrawable('.line'), {
+  draw: ['0 0', '0 1'],
+  ease: 'inOut(3)',
+  autoplay: onScroll({ sync: true }),
+});</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 MOTION PATH -->
+  <section class="station">
+    <div class="wrap">
+      <div class="st-head"><span class="st-num">03</span>
+        <div class="st-titles"><h3>Motion path</h3><p>Spread a path's coordinates into an animation and the element rides it — position and rotation handled for you.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage">
+            <svg id="path03" viewBox="0 0 320 180" role="img" aria-label="A marker travelling along a looping circuit">
+              <path class="track" id="track03" d="M40 90 C 40 30 120 30 160 70 C 200 110 250 150 280 110 C 300 80 280 40 240 50 C 180 65 120 150 60 120 C 38 110 40 100 40 90 Z"/>
+              <g class="rider"><path d="M-7 -6 L9 0 L-7 6 L-3 0 Z"/></g>
+            </svg>
+          </div>
+          <div class="stage-foot"><span class="hint">createMotionPath · loop</span>
+            <button class="btn" data-play="03" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>pause</button></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>03 · motion path</span></div>
+<pre class="code"><code>import { animate, svg } from 'animejs';
+
+animate('.rider', {
+  ease: 'linear',
+  duration: 4200,
+  loop: true,
+  ...svg.createMotionPath('.track'),
+});</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 MORPH -->
+  <section class="station">
+    <div class="wrap">
+      <div class="st-head"><span class="st-num">04</span>
+        <div class="st-titles"><h3>Shape morph</h3><p>Interpolate one SVG shape into another. Anime.js extrapolates the points so the transition stays smooth.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage">
+            <svg id="morph04" viewBox="0 0 200 160" role="img" aria-label="A shape morphing between forms">
+              <polygon class="morph shape" points="100,24 128,64 176,80 128,96 100,136 72,96 24,80 72,64"/>
+              <polygon class="target" style="opacity:0" points="100,24 128,64 176,80 128,96 100,136 72,96 24,80 72,64"/>
+            </svg>
+          </div>
+          <div class="stage-foot"><span class="hint">svg.morphTo · inOutCirc</span>
+            <button class="btn" data-play="04" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>morph</button></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>04 · morph</span></div>
+<pre class="code"><code>import { animate, svg, utils } from 'animejs';
+
+utils.set('.target', { points: nextShape() });
+animate('.shape', {
+  points: svg.morphTo('.target'),
+  ease: 'inOutCirc',
+  duration: 900,
+});</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 BLEND SCATTER -->
+  <section class="station">
+    <div class="wrap">
+      <div class="st-head"><span class="st-num">05</span>
+        <div class="st-titles"><h3>Blend scatter</h3><p>Function-based values give every element its own random target. <code style="font-family:var(--mono);font-size:.85em">composition:'blend'</code> layers transforms without overwriting each other.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage"><div class="chipfield" id="scatter05" aria-hidden="true"></div></div>
+          <div class="stage-foot"><span class="hint">composition: 'blend' · utils.random</span>
+            <button class="btn" data-play="05" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 5h5M5 5v5M19 5h-5M19 5v5M5 19h5M5 19v-5M19 19h-5M19 19v-5"/></svg>scatter</button></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>05 · blend</span></div>
+<pre class="code"><code>import { animate, utils } from 'animejs';
+
+animate('.chip', {
+  x: () => utils.random(-120, 120),
+  y: () => utils.random(-90, 90),
+  rotate: () => utils.random(-180, 180),
+  composition: 'blend',
+  duration: () => utils.random(500, 1000),
+});</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 DRAGGABLE + SPRING -->
+  <section class="station">
+    <div class="wrap">
+      <div class="st-head"><span class="st-num">06</span>
+        <div class="st-titles"><h3>Draggable + spring</h3><p>Throw it. On release a spring eases the puck to rest with real physics — drag, flick, snap.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage" style="padding:var(--s4)"><div class="pad" id="pad06"><div class="puck" id="puck06" role="button" tabindex="0" aria-label="Draggable puck">drag</div></div></div>
+          <div class="stage-foot"><span class="hint">spring · stiffness 120 / damping 6</span>
+            <button class="btn" data-play="06" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3v6m0 0 3-3m-3 3L9 6M5 12H3m18 0h-2M7 17l-1.5 1.5M12 21v-2"/></svg>reset</button></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>06 · draggable</span></div>
+<pre class="code"><code>import { createDraggable, spring } from 'animejs';
+
+createDraggable('.puck', {
+  container: '.pad',
+  releaseEase: spring({ stiffness: 120, damping: 6 }),
+});</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 CLOCKWORK -->
+  <section class="station">
+    <div class="wrap">
+      <div class="st-head"><span class="st-num">07</span>
+        <div class="st-titles"><h3>Clockwork</h3><p>Two tracks on one timeline, locked together with the <code style="font-family:var(--mono);font-size:.85em">'&lt;'</code> position — ticks pulse, the hand sweeps, forever in sync.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage"><svg class="clock" id="clock07" viewBox="0 0 200 200" role="img" aria-label="A clock ring pulsing in sequence with a sweeping hand"><g id="ticks07"></g><line class="ticker" x1="100" y1="100" x2="100" y2="38"/><circle class="hub" cx="100" cy="100" r="6"/></svg></div>
+          <div class="stage-foot"><span class="hint">timeline · '&lt;' sync · loop</span><span class="rm-note">static · 12 o'clock</span></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>07 · timeline</span></div>
+<pre class="code"><code>import { createTimeline, stagger } from 'animejs';
+
+createTimeline({ loop: true })
+  .add('.tick', { opacity: [.25, 1], duration: 50 }, stagger(10))
+  .add('.ticker', { rotate: 360, duration: 1920 }, '&lt;');</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 RESPONSIVE SCOPE -->
+  <section class="station">
+    <div class="wrap">
+      <div class="st-head"><span class="st-num">08</span>
+        <div class="st-titles"><h3>Responsive scope</h3><p>A scope re-runs your animation when a media query flips. Resize the window — the orbs swap their axis of motion.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage"><div class="orbwrap" id="scope08" aria-hidden="true"><span class="orb"></span><span class="orb"></span><span class="orb"></span></div></div>
+          <div class="stage-foot"><span class="hint" id="scopeHint">scope · mediaQueries · orientation flip</span><span class="rm-note">static</span></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>08 · scope</span></div>
+<pre class="code"><code>import { createScope, createTimeline, stagger } from 'animejs';
+
+createScope({ mediaQueries: { portrait: '(orientation: portrait)' } })
+  .add(({ matches }) => {
+    const p = matches.portrait;
+    createTimeline({ loop: true, alternate: true })
+      .add('.orb', { x: p ? [-40,40] : 0, y: p ? 0 : [-40,40] }, stagger(120));
+  });</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 CHARACTER STAGGER -->
+  <section class="station">
+    <div class="wrap">
+      <div class="st-head"><span class="st-num">09</span>
+        <div class="st-titles"><h3>Character stagger</h3><p>Split a string into per-letter spans, wrap each word for a natural reveal clip, then stagger them in with a single <code style="font-family:var(--mono);font-size:.85em">delay</code> call.</p></div>
+      </div>
+      <div class="st-grid">
+        <div>
+          <div class="stage"><div class="charfield" id="text09" aria-live="polite" aria-label="Animated text: make it move."></div></div>
+          <div class="stage-foot"><span class="hint">delay: stagger(35) · outExpo · word-wrap clip</span>
+            <button class="btn" data-play="09" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>replay</button></div>
+        </div>
+        <div class="code-panel"><div class="code-bar"><i></i><i></i><i></i><span>09 · char stagger</span></div>
+<pre class="code"><code>import { animate, stagger } from 'animejs';
+
+// split text into per-letter spans
+animate('.char', {
+  translateY: ['1.1em', 0],
+  opacity: [0, 1],
+  ease: 'outExpo',
+  duration: 550,
+  delay: stagger(35),
+});</code></pre></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="bundle">
+    <div class="wrap">
+      <p class="eyebrow">Ship only what you use</p>
+      <p class="lead" style="margin:var(--s3) 0 var(--s6);max-width:46ch">Anime.js v4 is modular and ESM-first — import only the modules a page touches and the bundle stays small.</p>
+      <div class="foot-row">
+        <div class="foot-links">
+          <a href="https://animejs.com/documentation" target="_blank" rel="noopener">Docs ↗</a>
+          <a href="https://github.com/juliangarnier/anime" target="_blank" rel="noopener">GitHub ↗</a>
+          <a href="https://animejs.com" target="_blank" rel="noopener">animejs.com ↗</a>
+        </div>
+        <p class="foot-note">Anime.js v4 showcase · nine instruments · motion enhances, content stands alone.</p>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script type="module">
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+root.dataset.reduce = reduce ? '1' : '0';
+
+/* ---------- code highlighting (runs regardless of engine) ---------- */
+(function highlight(){
+  const re = /(\/\/[^\n]*)|('[^']*')|\b(\d+\.?\d*)\b|\b(animate|createTimeline|createDraggable|spring|createScope|createMotionPath|createDrawable|morphTo|stagger|onScroll|utils|svg|import|from|const|let|return)\b/g;
+  document.querySelectorAll('pre.code code').forEach(el=>{
+    const raw = el.textContent;
+    el.innerHTML = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(re,(m,c,s,n,k)=> c?`<span class="c">${c}</span>` : s?`<span class="s">${s}</span>` : n?`<span class="n">${n}</span>` : `<span class="k">${k}</span>`);
+  });
+})();
+
+/* ---------- build DOM that demos need (independent of the engine) ---------- */
+function buildField(host, n){ const f=document.createDocumentFragment(); for(let i=0;i<n;i++){const d=document.createElement('div'); d.className='dot'; f.appendChild(d);} host.appendChild(f); }
+buildField(document.getElementById('grid01'), 169);
+(function heroField(){ const f=document.querySelector('#heroGrid .field'); for(let i=0;i<121;i++) f.appendChild(document.createElement('i')); })();
+(function chips(){ const h=document.getElementById('scatter05'); for(let i=0;i<16;i++){const c=document.createElement('span'); c.className='chip-s'; h.appendChild(c);} })();
+(function ticks(){ const g=document.getElementById('ticks07'); for(let i=0;i<48;i++){const a=(i/48)*Math.PI*2; const x1=100+Math.cos(a)*78,y1=100+Math.sin(a)*78,x2=100+Math.cos(a)*88,y2=100+Math.sin(a)*88; const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('class','tick'); l.setAttribute('x1',x1.toFixed(1)); l.setAttribute('y1',y1.toFixed(1)); l.setAttribute('x2',x2.toFixed(1)); l.setAttribute('y2',y2.toFixed(1)); g.appendChild(l);} })();
+(function charField(){ const host=document.getElementById('text09'); const phrase='make it move.'; const frag=document.createDocumentFragment(); phrase.split(' ').forEach((word,wi,arr)=>{ const w=document.createElement('span'); w.className='char-word'; [...word].forEach(ch=>{ const s=document.createElement('span'); s.className='char'; s.textContent=ch; w.appendChild(s); }); frag.appendChild(w); if(wi<arr.length-1){ const sp=document.createElement('span'); sp.className='char-sp'; sp.textContent=' '; frag.appendChild(sp); } }); host.appendChild(frag); })();
+
+/* if reduced motion: stop here. DOM is built, everything sits in its resolved static state. */
+if(reduce){
+  document.querySelectorAll('.btn[data-play]').forEach(b=>{ b.disabled=true; });
+} else {
+  /* ---------- load the engine ---------- */
+  import('https://cdn.jsdelivr.net/npm/animejs@4/+esm').then(A=>{
+    const { animate, createTimeline, stagger, createDraggable, spring, createScope, svg, utils, onScroll } = A;
+
+    const inview = (el,cb,once=true)=>{ const io=new IntersectionObserver((ents)=>{ ents.forEach(e=>{ if(e.isIntersecting){ cb(); if(once) io.unobserve(e.target); } }); },{threshold:.35}); io.observe(el); };
+    const mod = (fn)=>{ try{ fn(); }catch(err){ console.warn('module skipped:', err); } };
+    const play = {};
+
+    /* 01 grid stagger */
+    mod(()=>{
+      const dots01 = utils.$('#grid01 .dot');
+      play['01']=()=> createTimeline().add(dots01,{ scale:[1,1.6,1], opacity:[.55,1,.85], ease:'inOutQuad', duration:700 }, stagger(45,{grid:[13,13],from:'center'}));
+      inview(document.getElementById('grid01'), play['01']);
+    });
+
+    /* hero pointer-reactive grid */
+    mod(()=>{
+      const cells=utils.$('#heroGrid i'); const cols=11; let lock=false;
+      const ripple=(from)=> animate(cells,{ scale:[1,1.45,1], opacity:[.22,.6,.22], ease:'inOutQuad', duration:620, delay:stagger(26,{grid:[cols,cols],from}) });
+      const hero=document.querySelector('.hero'); const grid=document.querySelector('#heroGrid .field');
+      const fire=(cx,cy)=>{ if(lock) return; lock=true; const r=grid.getBoundingClientRect(); const col=Math.max(0,Math.min(cols-1,Math.floor((cx-r.left)/r.width*cols))); const rowi=Math.max(0,Math.min(cols-1,Math.floor((cy-r.top)/r.height*cols))); ripple(rowi*cols+col); setTimeout(()=>lock=false,230); };
+      hero.addEventListener('pointermove',e=>fire(e.clientX,e.clientY),{passive:true});
+      hero.addEventListener('pointerdown',e=>fire(e.clientX,e.clientY),{passive:true});
+    });
+
+    /* 02 draw on scroll */
+    mod(()=> animate(svg.createDrawable('#draw02 .ln'), { draw:['0 0','0 1'], ease:'inOut(3)', autoplay:onScroll({ target:'#draw02', sync:true }) }) );
+
+    /* 03 motion path */
+    mod(()=>{
+      const anim03 = animate('#path03 .rider', { ease:'linear', duration:4200, loop:true, ...svg.createMotionPath('#track03') });
+      const btn03=document.querySelector('[data-play="03"]'); let paused=false;
+      btn03.addEventListener('click',()=>{ paused=!paused; if(paused){ anim03.pause(); btn03.setAttribute('aria-pressed','true'); btn03.lastChild.textContent='play'; } else { anim03.play(); btn03.setAttribute('aria-pressed','false'); btn03.lastChild.textContent='pause'; } });
+    });
+
+    /* 04 morph */
+    mod(()=>{
+      const star='100,24 128,64 176,80 128,96 100,136 72,96 24,80 72,64';
+      const blob='100,28 150,42 168,92 140,134 84,140 40,108 36,58 70,34';
+      const hex='100,26 158,60 158,128 100,162 42,128 42,60';
+      const tri='100,28 168,140 32,140';
+      const shapes=[blob,hex,tri,star]; let i=0;
+      const disp=utils.$('#morph04 .shape')[0], tgt=utils.$('#morph04 .target')[0];
+      play['04']=()=>{ i=(i+1)%shapes.length; utils.set(tgt,{points:shapes[i]}); animate(disp,{ points:svg.morphTo(tgt), ease:'inOutCirc', duration:900 }); };
+      setInterval(play['04'],2400);
+    });
+
+    /* 05 blend scatter */
+    mod(()=>{
+      const chips05=utils.$('#scatter05 .chip-s'); let scattered=false;
+      play['05']=()=>{ scattered=!scattered;
+        if(scattered) animate(chips05,{ x:()=>utils.random(-120,120), y:()=>utils.random(-85,85), rotate:()=>utils.random(-180,180), scale:()=>utils.random(.6,1.25), composition:'blend', ease:'out(3)', duration:()=>utils.random(500,1000) });
+        else animate(chips05,{ x:0,y:0,rotate:0,scale:1, ease:'out(4)', duration:650 });
+      };
+      inview(document.getElementById('scatter05'), play['05']);
+    });
+
+    /* 06 draggable + spring */
+    mod(()=>{
+      createDraggable('#puck06', { container:'#pad06', releaseEase:spring({ stiffness:120, damping:6 }) });
+      document.querySelector('[data-play="06"]').addEventListener('click',()=> animate('#puck06',{ x:0,y:0, ease:spring({stiffness:90,damping:9}) }));
+    });
+
+    /* 07 clockwork */
+    mod(()=> createTimeline({ loop:true })
+      .add('#ticks07 .tick', { opacity:[.25,1], duration:50 }, stagger(10))
+      .add('#clock07 .ticker', { rotate:360, duration:1920, ease:'linear' }, '<') );
+
+    /* 08 responsive scope */
+    mod(()=>{
+      const hint=document.getElementById('scopeHint');
+      createScope({ mediaQueries:{ portrait:'(orientation: portrait)' } }).add(({matches})=>{
+        const p=matches.portrait; hint.textContent = p ? "matches.portrait → x-axis" : "landscape → y-axis";
+        const tl=createTimeline({ loop:true, alternate:true }).add('#scope08 .orb', { x:p?[-38,38]:0, y:p?0:[-38,38], ease:'inOutSine', duration:1300 }, stagger(110));
+        return ()=> tl.revert && tl.revert();
+      });
+    });
+
+    /* 09 character stagger */
+    mod(()=>{
+      const chars09=utils.$('#text09 .char');
+      play['09']=()=> animate(chars09,{ translateY:['1.1em',0], opacity:[0,1], ease:'outExpo', duration:550, delay:stagger(35) });
+      inview(document.getElementById('text09'), play['09']);
+    });
+
+    /* wire one-shot replay buttons (01, 04, 05, 09) */
+    document.querySelectorAll('[data-play="01"],[data-play="04"],[data-play="05"],[data-play="09"]').forEach(b=> b.addEventListener('click',()=>{ const f=play[b.dataset.play]; if(f) f(); }));
+
+  }).catch(()=>{
+    document.querySelectorAll('.btn[data-play]').forEach(b=> b.disabled=true);
+  });
+}
+</script>
+</body>
+</html>
